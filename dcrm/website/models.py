@@ -1,7 +1,4 @@
 from django.db import models
-
-
-from django.db import models
 import uuid
 
 class Artist(models.Model):
@@ -24,6 +21,19 @@ class Artist(models.Model):
         super().save(*args, **kwargs)
 
 
+class Storage(models.Model):
+    storage_id = models.CharField(primary_key=True, max_length=7, unique=True, default='W000000')
+    storage_loc = models.CharField(max_length=40, blank=True, null=True)
+    storage_type = models.CharField(max_length=20, blank=True, null=True)
+    storage_city = models.CharField(max_length=20, blank=True, null=True)
+    on_loan = models.CharField(max_length=20, blank=True, null=True)
+    storage_room = models.CharField(max_length=20, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'storage'
+
+
 class Artwork(models.Model):
     art_num = models.CharField(primary_key=True, max_length=8)
     art_title = models.CharField(max_length=50, blank=True, null=True)
@@ -31,7 +41,9 @@ class Artwork(models.Model):
     art_medium = models.CharField(max_length=50, blank=True, null=True)
     is_sold = models.CharField(max_length=1, blank=True, null=True)
     art_size = models.CharField(max_length=50, blank=True, null=True)
+    image_link = models.CharField(max_length=100, blank=True, null=True)
     artist = models.ForeignKey(Artist, models.DO_NOTHING, blank=False, null=False)
+    storage = models.ForeignKey(Storage, models.DO_NOTHING, blank=False, null=False)
 
     class Meta:
         managed = True
@@ -42,6 +54,7 @@ class FlatFile(models.Model):
     file = models.OneToOneField('Storage', models.DO_NOTHING, primary_key=True)
     letter_code = models.CharField(max_length=10, blank=True, null=True)
 
+
     class Meta:
         managed = True
         db_table = 'flat_file'
@@ -49,6 +62,7 @@ class FlatFile(models.Model):
 
 class Rack(models.Model):
     rack = models.OneToOneField('Storage', models.DO_NOTHING, primary_key=True)
+    rack_num = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -62,16 +76,6 @@ class Sale(models.Model):
     class Meta:
         managed = True
         db_table = 'sale'
-
-
-class Storage(models.Model):
-    storage_id = models.CharField(primary_key=True, max_length=7)
-    storage_loc = models.CharField(max_length=40, blank=True, null=True)
-    storage_type = models.CharField(max_length=20, blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'storage'
 
 
 class WallSpace(models.Model):
