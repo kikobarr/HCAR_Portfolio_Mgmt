@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .filters import ArtistFilter
 from .models import *
+from .forms import ArtistSearchForm
 
 
 
@@ -25,16 +25,6 @@ def home(request):
             return redirect('home')
     # else the action is GET, so we just serve the home page
     else:
-        # myFilter = ArtistFilter()
-        # artist_fname = Artist.artist_fname
-        # artist_lname = Artist.artist_lname
-        # context = {'artist_fname':artist_fname, 'artist_lname':artist_lname, 'myFilter':myFilter}
-        # print(request.GET)
-        # Django ORM database query
-        # https://docs.djangoproject.com/en/5.1/topics/db/queries/
-        # Entry.objects.filter(pub_date__year=2006)
-        # Artist.objects.all()
-        # if we have a search param,
         return render(request, 'home.html', {'foo':'bar'})
 
 
@@ -54,4 +44,21 @@ def artists(request):
     return render(request, 'artists.html', {'artists': artists})
     return redirect('artists')
 
+def artist_search(request):
+    form = ArtistSearchForm(request.GET)
+    artists = []
 
+    if form.is_valid():
+        artist_fname = form.cleaned_data.get("artist_fname")
+        artist_lname = form.cleaned_data.get("artist_lname")
+
+        query = {}
+        if artist_fname:
+            query["artist_fname__icontains"] = artist_fname
+        if artist_lname:
+            query["artist_lname__icontains"] = artist_lname
+
+        if query:
+            artists = Artist.objects.filter(**query)
+
+    return render(request, "artist_search.html", {"form": form, "artists": artists})
